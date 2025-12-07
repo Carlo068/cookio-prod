@@ -1,14 +1,19 @@
+"use client"
+
 import Link from "next/link"
 import Image from "next/image"
 import { Clock, Flame, Users } from "lucide-react"
 import type { RecipeSummary } from "@/types/recipe"
 import { NutritionBadge } from "./nutrition-badge"
+import { useRouter } from "next/navigation"
 
 interface RecipeCardProps {
   recipe: RecipeSummary
+  showEdit?: boolean
 }
 
-export function RecipeCard({ recipe }: RecipeCardProps) {
+export function RecipeCard({ recipe, showEdit = false }: RecipeCardProps) {
+  const router = useRouter()
   return (
     <Link href={`/recipes/${recipe.slug}`} className="group block">
       <article className="overflow-hidden rounded-xl border border-border bg-card transition-all hover:shadow-lg hover:shadow-primary/5">
@@ -19,6 +24,19 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
+          {showEdit && (
+            <button
+              type="button"
+              className="absolute right-3 top-3 rounded-md bg-background/90 px-3 py-1 text-xs font-medium text-primary backdrop-blur-sm hover:bg-background"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                router.push(`/recipes/${recipe.slug}/edit`)
+              }}
+            >
+              Edit
+            </button>
+          )}
           <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
             {recipe.categories.slice(0, 2).map((category) => (
               <span

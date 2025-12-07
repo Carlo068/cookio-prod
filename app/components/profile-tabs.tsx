@@ -67,7 +67,7 @@ export function ProfileTabs({ myRecipes, savedRecipes }: ProfileTabsProps) {
                   New Recipe
                 </Link>
               </div>
-              <RecipeGrid recipes={myRecipes} />
+              <RecipeGrid recipes={myRecipes} showEdit />
             </>
           )}
         </div>

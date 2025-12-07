@@ -7,6 +7,7 @@ interface RecipeGridProps {
   isLoading?: boolean
   errorMessage?: string | null
   skeletonCount?: number
+  showEdit?: boolean
 }
 
 export function RecipeGrid({
@@ -15,6 +16,7 @@ export function RecipeGrid({
   isLoading = false,
   errorMessage = null,
   skeletonCount = 6,
+  showEdit = false,
 }: RecipeGridProps) {
   if (errorMessage) {
     return (
@@ -45,7 +47,11 @@ export function RecipeGrid({
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4">
       {recipes.map((recipe) => (
-        <RecipeCard key={recipe.id || (recipe as { _id?: string })._id || recipe.slug} recipe={recipe} />
+        <RecipeCard
+          key={recipe.id || (recipe as { _id?: string })._id || recipe.slug}
+          recipe={recipe}
+          showEdit={showEdit}
+        />
       ))}
     </div>
   )

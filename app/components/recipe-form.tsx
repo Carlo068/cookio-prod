@@ -122,13 +122,15 @@ export function RecipeForm({ recipe, mode }: RecipeFormProps) {
       }
 
       const isCreateMode = mode === "create"
-      const url = isCreateMode ? "/api/create-recipe" : `/api/recipes/${recipe?.id}`
-      const method = isCreateMode ? "POST" : "PUT"
+      const url = isCreateMode ? "/api/create-recipe" : "/api/edit-recipes"
+      const method = isCreateMode ? "POST" : "PATCH"
 
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: isCreateMode
+          ? JSON.stringify(payload)
+          : JSON.stringify({ slug: recipe?.slug, id: recipe?.id, updates: payload }),
       })
 
       if (!res.ok) {
@@ -136,7 +138,7 @@ export function RecipeForm({ recipe, mode }: RecipeFormProps) {
       }
 
       const data = await res.json()
-      router.push(`/recipes/${data.slug || recipe?.slug}`)
+      router.push(`/recipes/${data.slug || data?.data?.slug || recipe?.slug}`)
       router.refresh()
     } catch {
       setError("Failed to save recipe. Please try again.")

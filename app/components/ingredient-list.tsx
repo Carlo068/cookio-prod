@@ -13,9 +13,11 @@ export function IngredientList({ ingredients, servings }: IngredientListProps) {
         <span className="text-sm text-muted-foreground">{servings} servings</span>
       </div>
       <ul className="space-y-3">
-        {ingredients.map((ingredient) => (
+        {ingredients.map((ingredient, index) => (
           <li
-            key={ingredient.id}
+            key={
+              ingredient.id || `${ingredient.name}-${ingredient.amount}-${ingredient.unit}-${index}`
+            }
             className="flex items-center gap-3 border-b border-border pb-3 last:border-0 last:pb-0"
           >
             <div className="flex h-6 w-6 items-center justify-center rounded-full border border-border">
