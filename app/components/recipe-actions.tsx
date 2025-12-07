@@ -24,9 +24,24 @@ export function RecipeActions({ recipe }: RecipeActionsProps) {
       router.push("/login")
       return
     }
-    setIsLiked(!isLiked)
-    setLikes(isLiked ? likes - 1 : likes + 1)
-    // API call would go here
+    const nextLike = !isLiked
+    setIsLiked(nextLike)
+    setLikes(nextLike ? likes + 1 : Math.max(0, likes - 1))
+    try {
+      const res = await fetch("/api/recipes/like", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug: recipe.slug, like: nextLike }),
+      })
+      if (!res.ok) throw new Error("Request failed")
+      const data = await res.json()
+      setLikes(typeof data?.data?.likes === "number" ? data.data.likes : likes)
+      setIsLiked(!!data?.data?.isLiked)
+    } catch (e) {
+      // revert on error
+      setIsLiked(isLiked)
+      setLikes(likes)
+    }
   }
 
   const handleSave = async () => {
@@ -34,8 +49,20 @@ export function RecipeActions({ recipe }: RecipeActionsProps) {
       router.push("/login")
       return
     }
-    setIsSaved(!isSaved)
-    // API call would go here
+    const nextSaved = !isSaved
+    setIsSaved(nextSaved)
+    try {
+      const res = await fetch("/api/recipes/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug: recipe.slug, save: nextSaved }),
+      })
+      if (!res.ok) throw new Error("Request failed")
+      const data = await res.json()
+      setIsSaved(!!data?.data?.isSaved)
+    } catch (e) {
+      setIsSaved(isSaved)
+    }
   }
 
   const handleShare = async () => {
