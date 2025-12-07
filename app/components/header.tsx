@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useSession, signIn, signOut } from "next-auth/react"
 import { useState } from "react"
 import { Menu, X, ChefHat, User, LogOut, Plus, BookOpen } from "lucide-react"
@@ -8,7 +9,9 @@ import { Menu, X, ChefHat, User, LogOut, Plus, BookOpen } from "lucide-react"
 export function Header() {
   const { data: session, status } = useSession()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false)
   const handleGoogleAuth = () => signIn("google", { callbackUrl: "/" })
+  const router = useRouter()
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -47,27 +50,44 @@ export function Header() {
                 <Plus className="h-4 w-4" />
                 New Recipe
               </Link>
-              <div className="relative group">
-                <button className="flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-medium transition-colors hover:bg-muted">
+              <div className="relative">
+                <button
+                  className="flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-medium transition-colors hover:bg-muted"
+                  onClick={() => setAccountMenuOpen((v) => !v)}
+                  aria-haspopup="menu"
+                  aria-expanded={accountMenuOpen}
+                >
                   <User className="h-4 w-4" />
                   {session.user?.name?.split(" ")[0] || "Account"}
                 </button>
-                <div className="absolute right-0 top-full mt-2 hidden w-48 rounded-lg border border-border bg-card p-2 shadow-lg group-hover:block">
-                  <Link
-                    href="/profile"
-                    className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                {accountMenuOpen && (
+                  <div
+                    className="absolute right-0 top-full mt-2 w-48 rounded-lg border border-border bg-card p-2 shadow-lg"
+                    role="menu"
+                    onMouseLeave={() => setAccountMenuOpen(false)}
                   >
-                    <BookOpen className="h-4 w-4" />
-                    My Profile
-                  </Link>
-                  <button
-                    onClick={() => signOut()}
-                    className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    Sign Out
-                  </button>
-                </div>
+                    <button
+                      className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                      onClick={() => {
+                        setAccountMenuOpen(false)
+                        router.push("/profile")
+                      }}
+                    >
+                      <BookOpen className="h-4 w-4" />
+                      My Profile
+                    </button>
+                    <button
+                      onClick={() => {
+                        setAccountMenuOpen(false)
+                        signOut()
+                      }}
+                      className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Sign Out
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           ) : (
