@@ -9,6 +9,7 @@ export async function GET(request: Request) {
 	const difficulty = searchParams.get("difficulty")?.trim()?.toLowerCase()
 	const maxTime = Number(searchParams.get("maxTime"))
 	const maxCalories = Number(searchParams.get("maxCalories"))
+	const minCalories = Number(searchParams.get("minCalories"))
 	const userId = searchParams.get("userId")?.trim()
 	const saved = searchParams.get("saved")?.trim()?.toLowerCase()
 	const page = Number(searchParams.get("page") ?? 1)
@@ -36,8 +37,11 @@ export async function GET(request: Request) {
 		query.totalTime = { $lte: maxTime }
 	}
 
-	if (!Number.isNaN(maxCalories) && maxCalories > 0) {
-		query["nutrition.calories"] = { $lte: maxCalories }
+	if ((!Number.isNaN(minCalories) && minCalories > 0) || (!Number.isNaN(maxCalories) && maxCalories > 0)) {
+		const cal: Record<string, number> = {}
+		if (!Number.isNaN(minCalories) && minCalories > 0) cal.$gte = minCalories
+		if (!Number.isNaN(maxCalories) && maxCalories > 0) cal.$lte = maxCalories
+		query["nutrition.calories"] = cal
 	}
 
 	if (userId) {

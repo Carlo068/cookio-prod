@@ -80,6 +80,7 @@ const parseFilters = (params: SearchParams): FiltersType => {
     category: rawCategory && rawCategory !== "all" ? rawCategory : undefined,
     difficulty: rawDifficulty && VALID_DIFFICULTIES.has(rawDifficulty) ? rawDifficulty : undefined,
     maxTime: toNumberValue(params.maxTime),
+    minCalories: toNumberValue(params.minCalories),
     maxCalories: toNumberValue(params.maxCalories),
     page: page && page > 0 ? page : 1,
     limit: limit && limit > 0 ? Math.min(limit, MAX_PAGE_SIZE) : DEFAULT_PAGE_SIZE,
@@ -93,7 +94,10 @@ const buildQueryString = (filters: FiltersType) => {
   if (filters.category) params.set("category", filters.category)
   if (filters.difficulty) params.set("difficulty", filters.difficulty)
   if (typeof filters.maxTime === "number" && filters.maxTime > 0) params.set("maxTime", String(filters.maxTime))
-  if (typeof filters.maxCalories === "number" && filters.maxCalories > 0) params.set("maxCalories", String(filters.maxCalories))
+  if (typeof filters.minCalories === "number" && filters.minCalories > 0)
+    params.set("minCalories", String(filters.minCalories))
+  if (typeof filters.maxCalories === "number" && filters.maxCalories > 0)
+    params.set("maxCalories", String(filters.maxCalories))
 
   params.set("page", String(filters.page ?? 1))
   params.set("limit", String(filters.limit ?? DEFAULT_PAGE_SIZE))

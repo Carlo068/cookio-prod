@@ -17,9 +17,9 @@ const timeOptions = [
 
 const calorieOptions = [
   { label: "Any calories", value: "" },
-  { label: "Under 300 kcal", value: "300" },
-  { label: "Under 500 kcal", value: "500" },
-  { label: "Under 700 kcal", value: "700" },
+  { label: "Under 500 kcal", value: "under500" },
+  { label: "500 to 700 kcal", value: "500to700" },
+  { label: "Above 700 kcal", value: "above700" },
 ]
 
 export function RecipeFilters() {
@@ -31,15 +31,42 @@ export function RecipeFilters() {
   const [category, setCategory] = useState(searchParams.get("category") || "all")
   const [difficulty, setDifficulty] = useState(searchParams.get("difficulty") || "all")
   const [maxTime, setMaxTime] = useState(searchParams.get("maxTime") || "")
-  const [maxCalories, setMaxCalories] = useState(searchParams.get("maxCalories") || "")
+  const [calorieBand, setCalorieBand] = useState(() => {
+    const minC = Number(searchParams.get("minCalories") || "")
+    const maxC = Number(searchParams.get("maxCalories") || "")
+    if (!Number.isNaN(minC) && !Number.isNaN(maxC) && minC === 500 && maxC === 700) return "500to700"
+    if (!Number.isNaN(maxC) && maxC === 500) return "under500"
+    if (!Number.isNaN(minC) && minC >= 701) return "above700"
+    return ""
+  })
 
-  const updateFilters = () => {
+  const pushFilters = (values: {
+    search?: string
+    category?: string
+    difficulty?: string
+    maxTime?: string
+    calorieBand?: string
+  }) => {
+    const s = values.search ?? search
+    const c = values.category ?? category
+    const d = values.difficulty ?? difficulty
+    const t = values.maxTime ?? maxTime
+    const band = values.calorieBand ?? calorieBand
+
     const params = new URLSearchParams()
-    if (search) params.set("search", search)
-    if (category && category !== "all") params.set("category", category)
-    if (difficulty && difficulty !== "all") params.set("difficulty", difficulty)
-    if (maxTime) params.set("maxTime", maxTime)
-    if (maxCalories) params.set("maxCalories", maxCalories)
+    if (s) params.set("search", s)
+    if (c && c !== "all") params.set("category", c)
+    if (d && d !== "all") params.set("difficulty", d)
+    if (t) params.set("maxTime", t)
+    // map calorie band to min/max params
+    if (band === "under500") {
+      params.set("maxCalories", "500")
+    } else if (band === "500to700") {
+      params.set("minCalories", "500")
+      params.set("maxCalories", "700")
+    } else if (band === "above700") {
+      params.set("minCalories", "701")
+    }
 
     const query = params.toString()
     router.push(query ? `/recipes?${query}` : "/recipes")
@@ -50,13 +77,13 @@ export function RecipeFilters() {
     setCategory("all")
     setDifficulty("all")
     setMaxTime("")
-    setMaxCalories("")
+    setCalorieBand("")
     router.push("/recipes")
   }
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      updateFilters()
+      pushFilters({ search })
     }, 300)
     return () => clearTimeout(timer)
   }, [search])
@@ -66,10 +93,15 @@ export function RecipeFilters() {
     setCategory(searchParams.get("category") || "all")
     setDifficulty(searchParams.get("difficulty") || "all")
     setMaxTime(searchParams.get("maxTime") || "")
-    setMaxCalories(searchParams.get("maxCalories") || "")
+    const minC = Number(searchParams.get("minCalories") || "")
+    const maxC = Number(searchParams.get("maxCalories") || "")
+    if (!Number.isNaN(minC) && !Number.isNaN(maxC) && minC === 500 && maxC === 700) setCalorieBand("500to700")
+    else if (!Number.isNaN(maxC) && maxC === 500) setCalorieBand("under500")
+    else if (!Number.isNaN(minC) && minC >= 701) setCalorieBand("above700")
+    else setCalorieBand("")
   }, [searchParams])
 
-  const hasActiveFilters = category !== "all" || difficulty !== "all" || maxTime || maxCalories
+  const hasActiveFilters = category !== "all" || difficulty !== "all" || maxTime || calorieBand
 
   return (
     <div className="space-y-4">
@@ -97,7 +129,7 @@ export function RecipeFilters() {
           <span className="hidden sm:inline">Filters</span>
           {hasActiveFilters && (
             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
-              {[category !== "all", difficulty !== "all", maxTime, maxCalories].filter(Boolean).length}
+              {[category !== "all", difficulty !== "all", maxTime, calorieBand].filter(Boolean).length}
             </span>
           )}
         </button>
@@ -113,8 +145,9 @@ export function RecipeFilters() {
               <select
                 value={category}
                 onChange={(e) => {
-                  setCategory(e.target.value)
-                  setTimeout(updateFilters, 0)
+                  const value = e.target.value
+                  setCategory(value)
+                  pushFilters({ category: value })
                 }}
                 className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm capitalize focus:border-primary focus:outline-none"
               >
@@ -132,8 +165,9 @@ export function RecipeFilters() {
               <select
                 value={difficulty}
                 onChange={(e) => {
-                  setDifficulty(e.target.value)
-                  setTimeout(updateFilters, 0)
+                  const value = e.target.value
+                  setDifficulty(value)
+                  pushFilters({ difficulty: value })
                 }}
                 className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm capitalize focus:border-primary focus:outline-none"
               >
@@ -151,8 +185,9 @@ export function RecipeFilters() {
               <select
                 value={maxTime}
                 onChange={(e) => {
-                  setMaxTime(e.target.value)
-                  setTimeout(updateFilters, 0)
+                  const value = e.target.value
+                  setMaxTime(value)
+                  pushFilters({ maxTime: value })
                 }}
                 className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm focus:border-primary focus:outline-none"
               >
@@ -166,12 +201,13 @@ export function RecipeFilters() {
 
             {/* Calories */}
             <div>
-              <label className="mb-2 block text-sm font-medium">Calories</label>
+              <label className="mb-2 block text-sm font-medium">Calories (per serving)</label>
               <select
-                value={maxCalories}
+                value={calorieBand}
                 onChange={(e) => {
-                  setMaxCalories(e.target.value)
-                  setTimeout(updateFilters, 0)
+                  const value = e.target.value
+                  setCalorieBand(value)
+                  pushFilters({ calorieBand: value })
                 }}
                 className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm focus:border-primary focus:outline-none"
               >

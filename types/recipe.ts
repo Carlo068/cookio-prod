@@ -41,6 +41,7 @@ export interface RecipeFilters {
   search?: string
   category?: string
   maxCalories?: number
+  minCalories?: number
   maxTime?: number
   difficulty?: string
   page?: number
